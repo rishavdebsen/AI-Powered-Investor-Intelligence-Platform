@@ -1,0 +1,5 @@
+# Full profile: LLM + PDF ingestion + Azure deployment targets.
+-r requirements.txt
+openai>=1.50
+pymupdf4llm>=0.0.20,<1.0  # 2.0 on PyPI is an empty stub
+psycopg2-binary>=2.9
