@@ -1,0 +1,29 @@
+# Deploys to AKS on manual trigger. Requires repo secrets/vars:
+#   secrets.AZURE_CREDENTIALS  (service principal or federated identity JSON)
+#   vars.ACR_NAME, vars.AKS_CLUSTER, vars.AKS_RESOURCE_GROUP
+# and a kubernetes secret `investor-intel-secrets` created out-of-band.
+# Deploying creates PAID Azure resources (ACR, AKS, PostgreSQL if enabled).
+name: cd-aks
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Build and push images
+        run: |
+          az acr login --name ${{ vars.ACR_NAME }}
+          docker build -f docker/api.Dockerfile -t ${{ vars.ACR_NAME }}.azurecr.io/investor-intel-api:${{ github.sha }} .
+          docker build -f docker/ui.Dockerfile -t ${{ vars.ACR_NAME }}.azurecr.io/investor-intel-ui:${{ github.sha }} .
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/investor-intel-api:${{ github.sha }}
+          docker push ${{ vars.ACR_NAME }}.azurecr.io/investor-intel-ui:${{ github.sha }}
+      - name: Deploy to AKS
+        run: |
+          az aks get-credentials --resource-group ${{ vars.AKS_RESOURCE_GROUP }} --name ${{ vars.AKS_CLUSTER }} --overwrite-existing
+          sed -i "s|ACR_NAME|${{ vars.ACR_NAME }}|g; s|IMAGE_TAG|${{ github.sha }}|g" k8s/*.yaml
+          kubectl apply -f k8s/
