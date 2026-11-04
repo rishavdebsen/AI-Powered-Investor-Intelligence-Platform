@@ -6,3 +6,4 @@ requests>=2.32
 streamlit>=1.38
 python-dotenv>=1.0
 python-multipart>=0.0.9
+pymupdf4llm>=0.0.20,<1.0  # PDF ingestion; 2.0 on PyPI is an empty stub
