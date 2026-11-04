@@ -15,6 +15,9 @@ _PATTERNS: dict[str, str] = {
     "operating_income": r"operating\s+income\s+(?:of|was|were|reached)\s+\$?([\d,.]*\d)\s*(billion|million|thousand)?",
     "diluted_eps": r"diluted\s+(?:earnings\s+per\s+share|EPS)[^\d]{0,20}\$?([\d,.]*\d)",
     "operating_margin": r"operating\s+margin\s+(?:of|was|reached)\s+([\d.]+)\s*%",
+    "operating_cash_flow": r"operating\s+cash\s+flow\s+(?:of|was|were|reached)\s+\$?([\d,.]*\d)\s*(billion|million|thousand)?",
+    "total_assets": r"total\s+assets\s+(?:of|was|were|reached|stood\s+at)\s+\$?([\d,.]*\d)\s*(billion|million|thousand)?",
+    "total_liabilities": r"total\s+liabilit(?:y|ies)\s+(?:of|was|were|reached|stood\s+at)\s+\$?([\d,.]*\d)\s*(billion|million|thousand)?",
     "yoy_revenue_growth": r"revenues?\s+(?:grew|increased|rose)\s+([\d.]+)\s*%\s*(?:year[- ]over[- ]year|YoY)?",
 }
 
