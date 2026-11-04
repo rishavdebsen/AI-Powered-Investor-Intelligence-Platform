@@ -14,9 +14,18 @@ Total revenue of $4.2 billion for fiscal year 2025. Revenue grew 11% year
 over year, driven by demand for factory-automation sensors. Operating income
 was $980 million, and operating margin was 23%. Net income was $742 million.
 Diluted earnings per share was $5.16, up from $4.61 in the prior year.
+Operating cash flow was $1.1 billion. Total assets stood at $9.8 billion,
+and total liabilities stood at $5.4 billion.
 
 Free cash flow of $610 million supported continued investment in the
 company's sensor research programme and two capacity expansions.
+
+## Growth Drivers
+
+Demand for factory-automation sensors rose as automotive and energy customers
+modernised production lines. The company expanded its distributor network in
+Southeast Asia, and recurring software subscriptions attached to its sensor
+platform grew faster than hardware sales.
 
 ## Segment Results
 
