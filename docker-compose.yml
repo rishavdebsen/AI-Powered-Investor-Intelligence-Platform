@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    ports: ["8000:8000"]
+    environment:
+      - II_PROFILE=${II_PROFILE:-local}
+      - DATABASE_URL=sqlite:///./investor_intel.db
+  ui:
+    build:
+      context: .
+      dockerfile: docker/ui.Dockerfile
+    ports: ["8501:8501"]
+    environment:
+      - API_URL=http://api:8000
+    depends_on: [api]
