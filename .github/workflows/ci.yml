@@ -12,7 +12,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install
-        run: pip install -r requirements-dev.txt -r requirements-full.txt
+        run: |
+          pip install -r requirements-dev.txt -r requirements-full.txt
           pip install -e .
       - name: Lint
         run: ruff check src tests evaluation
