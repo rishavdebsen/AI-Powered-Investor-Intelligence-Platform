@@ -14,6 +14,7 @@ from __future__ import annotations
 import html
 import re
 import sys
+from uuid import uuid4
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
@@ -39,26 +40,30 @@ UNIT_SCALE = {"billion": 1.0, "million": 0.001, "thousand": 0.000001, "": 1.0}
 UNIT_SUFFIX = {"billion": "B", "million": "M", "thousand": "K", "": ""}
 
 
-@st.cache_resource
-def get_service() -> InvestorIntelService:
+def new_service(session_id: str) -> InvestorIntelService:
+    """One isolated service per visitor session: samples pre-load into a
+    per-session SQLite file, and uploads land in that same session's store.
+    Nothing is shared across anonymous visitors, and nothing resets while a
+    session keeps interacting (reruns reuse st.session_state)."""
     settings = get_settings()
-    # Demo data starts clean on every boot: Streamlit Cloud keeps gitignored
-    # files across reboots, so without this the SQLite rows (and their KPIs)
-    # would accumulate and duplicate across redeploys of changed samples.
-    if settings.database_url.startswith("sqlite:///"):
-        db_file = Path(settings.database_url.removeprefix("sqlite:///"))
-        db_file.unlink(missing_ok=True)
-    service = InvestorIntelService(settings)
-    uploads = service.data_dir / "uploads"
+    uploads = Path(settings.data_dir) / "uploads"
     uploads.mkdir(parents=True, exist_ok=True)
+    service = InvestorIntelService(settings, database_url=f"sqlite:///{uploads}/session-{session_id}.db")
     for filing in sorted(SAMPLE_DIR.glob("*.md")):
         service.ingest(filing)  # pre-load the bundled fictional sample filings
     return service
 
 
+if "session_id" not in st.session_state:
+    st.session_state.session_id = uuid4().hex[:12]
+if "service" not in st.session_state:
+    st.session_state.service = new_service(st.session_state.session_id)
+
+
 def company_label(doc_name: str) -> tuple[str, str]:
     """Split a filing filename into (company, fiscal-year label)."""
     stem = Path(doc_name).stem
+    stem = re.sub(r"^[0-9a-f]{12}-", "", stem)  # strip upload session prefix
     m = re.search(r"(?i)^(.*?)[-_ ]?fy[-_ ]?(\d{4})$", stem)
     if m:
         company = re.sub(r"[-_]+", " ", m.group(1)).strip().title()
@@ -88,7 +93,7 @@ def section_text(service: InvestorIntelService, doc_id: str, heading: str) -> st
     return "\n\n".join(r.text for r in rows if r.text).strip()
 
 
-service = get_service()
+service = st.session_state.service
 
 st.set_page_config(page_title="Investor Intelligence Platform", layout="wide")
 
@@ -126,16 +131,21 @@ with st.sidebar:
     st.caption("Free demo build - local TF-IDF retrieval, extractive answers (no generative AI).")
     st.divider()
     st.markdown("**Ingest Report**")
-    st.caption("Drop a filing (PDF / Markdown / text). Saved files live on the demo app's temporary disk.")
+    st.caption("Drop a filing (PDF / Markdown / text). It is ingested only into your browser session and lives on the demo app's temporary disk.")
+    if "ingested_uploads" not in st.session_state:
+        st.session_state.ingested_uploads = set()
     upload = st.file_uploader("Upload a filing", type=["pdf", "md", "txt"], label_visibility="collapsed")
-    if upload is not None:
-        dest = service.data_dir / "uploads" / Path(upload.name).name
+    if upload is not None and upload.name not in st.session_state.ingested_uploads:
+        st.session_state.ingested_uploads.add(upload.name)
+        uploads_dir = service.data_dir / "uploads"
+        uploads_dir.mkdir(parents=True, exist_ok=True)
+        dest = uploads_dir / f"{st.session_state.session_id}-{Path(upload.name).name}"
         dest.write_bytes(upload.getbuffer())
         result = service.ingest(dest)
         if result.get("duplicate"):
             st.info(f"{upload.name} is already ingested.")
         else:
-            st.success(f"Ingested {upload.name}: {result['chunks']} chunks, {result['kpis']} KPIs.")
+            st.success(f"Ingested {upload.name}: {result['chunks']} chunks, {result['kpis']} KPIs. Visible only in this browser session.")
         st.rerun()
     st.divider()
     st.markdown("**Ingested filings**")
