@@ -53,8 +53,8 @@ curl -X POST localhost:8000/ask -H 'content-type: application/json' \
 
 Server-side ingestion is restricted to the configured data directory
 (`II_DATA_DIR`, default `./data`); other paths are rejected. Use
-`POST /ingest/upload` (multipart) for arbitrary files. PDF ingestion needs
-`requirements-full.txt`. Set `LLM_PROVIDER=openai` (or `azure-openai`) and
+`POST /ingest/upload` (multipart) for arbitrary files. PDF ingestion uses
+`pymupdf4llm` (included in `requirements.txt`). Set `LLM_PROVIDER=openai` (or `azure-openai`) and
 `II_EMBEDDINGS_PROVIDER=openai` with the variables in `.env.example` to
 switch on the (unverified) semantic/LLM mode.
 
