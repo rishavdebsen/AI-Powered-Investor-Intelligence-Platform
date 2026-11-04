@@ -1,0 +1,8 @@
+[
+  {"question": "What was total revenue in fiscal 2025?", "expected_heading": "Financial Highlights"},
+  {"question": "How fast did revenue grow year over year?", "expected_heading": "Financial Highlights"},
+  {"question": "What was diluted EPS?", "expected_heading": "Financial Highlights"},
+  {"question": "Which segment generated the most revenue?", "expected_heading": "Segment Results"},
+  {"question": "What supply chain risks does the company face?", "expected_heading": "Risk Factors"},
+  {"question": "What does management expect for fiscal 2026?", "expected_heading": "Outlook"}
+]
