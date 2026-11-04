@@ -107,15 +107,6 @@ both Docker images on every push and PR.
   The evaluation golden set was authored for this project against that
   filing; it is not independent evidence of quality.
 
-## Acknowledgement
-
-The project concept (investor-filings RAG with KPI extraction on Azure) was
-inspired by
-[Sandesh-hase/AI-Powered-Investor-Intelligence-Platform](https://github.com/Sandesh-hase/AI-Powered-Investor-Intelligence-Platform).
-That repository has no license file, so there is no established permission
-to reuse its code; this codebase was implemented independently from scratch
-rather than copied.
-
 ## License
 
 MIT - see [LICENSE](LICENSE).
