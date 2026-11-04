@@ -54,9 +54,22 @@ def new_service(session_id: str) -> InvestorIntelService:
     return service
 
 
+@st.cache_resource
+def cleanup_orphan_uploads() -> None:
+    """Runs once per app process, before the first session store is created.
+    Leftover upload/session files from dead sessions are removed here, never
+    during an active session, so no file in use is ever deleted."""
+    uploads = Path(get_settings().data_dir) / "uploads"
+    if uploads.exists():
+        for leftover in uploads.iterdir():
+            if leftover.is_file():
+                leftover.unlink(missing_ok=True)
+
+
 if "session_id" not in st.session_state:
     st.session_state.session_id = uuid4().hex[:12]
 if "service" not in st.session_state:
+    cleanup_orphan_uploads()
     st.session_state.service = new_service(st.session_state.session_id)
 
 
@@ -131,7 +144,7 @@ with st.sidebar:
     st.caption("Free demo build - local TF-IDF retrieval, extractive answers (no generative AI).")
     st.divider()
     st.markdown("**Ingest Report**")
-    st.caption("Drop a filing (PDF / Markdown / text). It is ingested only into your browser session and lives on the demo app's temporary disk.")
+    st.caption("Drop a filing (PDF / Markdown / text). Uploaded files are stored on the demo app's temporary disk and visible only within this browser session; leftovers from earlier sessions are removed when the app restarts.")
     if "ingested_uploads" not in st.session_state:
         st.session_state.ingested_uploads = set()
     upload = st.file_uploader("Upload a filing", type=["pdf", "md", "txt"], label_visibility="collapsed")
@@ -145,7 +158,7 @@ with st.sidebar:
         if result.get("duplicate"):
             st.info(f"{upload.name} is already ingested.")
         else:
-            st.success(f"Ingested {upload.name}: {result['chunks']} chunks, {result['kpis']} KPIs. Visible only in this browser session.")
+            st.success(f"Ingested {upload.name}: {result['chunks']} chunks, {result['kpis']} KPIs. Stored on the app's temporary disk, visible only in this browser session.")
         st.rerun()
     st.divider()
     st.markdown("**Ingested filings**")
