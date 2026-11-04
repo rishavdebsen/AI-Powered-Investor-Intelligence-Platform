@@ -41,7 +41,14 @@ UNIT_SUFFIX = {"billion": "B", "million": "M", "thousand": "K", "": ""}
 
 @st.cache_resource
 def get_service() -> InvestorIntelService:
-    service = InvestorIntelService(get_settings())
+    settings = get_settings()
+    # Demo data starts clean on every boot: Streamlit Cloud keeps gitignored
+    # files across reboots, so without this the SQLite rows (and their KPIs)
+    # would accumulate and duplicate across redeploys of changed samples.
+    if settings.database_url.startswith("sqlite:///"):
+        db_file = Path(settings.database_url.removeprefix("sqlite:///"))
+        db_file.unlink(missing_ok=True)
+    service = InvestorIntelService(settings)
     uploads = service.data_dir / "uploads"
     uploads.mkdir(parents=True, exist_ok=True)
     for filing in sorted(SAMPLE_DIR.glob("*.md")):
