@@ -18,7 +18,7 @@ Ask questions of company filings and get answers with source citations, extract 
 
 ## Tech stack
 
-Python - FastAPI - Streamlit - scikit-learn (TF-IDF retrieval) - SQLite / PostgreSQL - Docker - GitHub Actions CI (lint, 15 tests, retrieval evaluation, Docker builds on every push)
+Python - FastAPI - Streamlit - scikit-learn (TF-IDF retrieval) - SQLite / PostgreSQL - Docker - GitHub Actions CI (lint, 17 tests, retrieval evaluation, Docker builds on every push)
 
 Implemented and verified locally: structure-aware ingestion (PDF / Markdown / text), KPI extraction, TF-IDF retrieval with extractive cited answers, the FastAPI backend and the Streamlit dashboard.
 
@@ -94,7 +94,7 @@ closes vocabulary gaps like "supply chain" vs "semiconductor suppliers".
 
 ## Testing
 
-`pytest -q` - 15 tests covering chunking, embeddings, retrieval, KPI
+`pytest -q` - 17 tests covering chunking, embeddings, retrieval, KPI
 extraction, the API flow, ingest path sandboxing, file upload, and PDF
 ingestion. CI (`.github/workflows/ci.yml`) installs the full dependency set
 (so the PDF test runs there too), then lints, tests, evaluates and builds
