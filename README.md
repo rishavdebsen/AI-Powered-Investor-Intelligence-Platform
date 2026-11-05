@@ -18,7 +18,7 @@ Ask questions of company filings and get answers with source citations, extract 
 
 ## Tech stack
 
-Python - FastAPI - Streamlit - scikit-learn (TF-IDF retrieval) - SQLite / PostgreSQL - Docker - GitHub Actions CI (lint, 17 tests, retrieval evaluation, Docker builds on every push)
+Python - FastAPI - Streamlit - dependency-free TF-IDF retrieval - SQLite / PostgreSQL - Docker - GitHub Actions CI (lint, 17 tests, retrieval evaluation, Docker builds on every push)
 
 Implemented and verified locally: structure-aware ingestion (PDF / Markdown / text), KPI extraction, TF-IDF retrieval with extractive cited answers, the FastAPI backend and the Streamlit dashboard.
 
