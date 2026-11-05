@@ -1,13 +1,28 @@
 # AI-Powered Investor Intelligence Platform
 
-Ask questions of company filings and get answers with citations, extract
-headline KPIs automatically, and review everything in a dashboard.
+Ask questions of company filings and get answers with source citations, extract headline KPIs automatically, and compare companies in a dark analytics dashboard.
 
-**Current verified state:** the local mode works end to end - lexical
-(TF-IDF keyword) retrieval with extractive answers that quote the retrieved
-excerpts. Semantic embeddings and LLM-written answers (OpenAI / Azure OpenAI)
-are implemented behind configuration but are **not yet verified** - no API
-key has been run against them. See "Honest status" below.
+**Live demo:** https://investor-intelligence-platform.streamlit.app
+(free hosting - the app can take ~30 seconds to wake up)
+
+![Dashboard comparing headline KPIs across companies](docs/screenshots/dashboard.png)
+![Ask a question, get extractive answers with citations from the filings](docs/screenshots/qa-citations.png)
+
+## What it does
+
+- Ingests filings (PDF, Markdown, text) with structure-aware chunking
+- Extracts headline KPIs (revenue, net income, operating income, cash flow, total assets, total liabilities) into a queryable store
+- Answers natural-language questions with extractive snippets and citations (source file, section, retrieval score)
+- Dashboard compares KPIs across companies and surfaces growth drivers and risk factors
+- FastAPI backend (`/ask`, `/ingest`, `/kpis`) plus a Streamlit UI, with Docker images for both services
+
+## Tech stack
+
+Python - FastAPI - Streamlit - scikit-learn (TF-IDF retrieval) - SQLite / PostgreSQL - Docker - GitHub Actions CI (lint, 15 tests, retrieval evaluation, Docker builds on every push)
+
+Implemented and verified locally: structure-aware ingestion (PDF / Markdown / text), KPI extraction, TF-IDF retrieval with extractive cited answers, the FastAPI backend and the Streamlit dashboard.
+
+Wired but not yet verified: OpenAI / Azure OpenAI embeddings and LLM-written answers, behind configuration - no API key has been run against them.
 
 ## Architecture
 
@@ -60,13 +75,20 @@ switch on the (unverified) semantic/LLM mode.
 
 ## Evaluation
 
-`python evaluation/run_eval.py` ingests the sample filing and measures
-retrieval hit@3 (did any top-3 chunk come from the expected section?),
-writing `evaluation/eval_report.md`. Current measured result: **6/6**.
+`python evaluation/run_eval.py` runs two suites and writes
+`evaluation/eval_report.md` with the measured numbers:
 
-Scope of that number: the golden set is 6 questions authored for this
-project against one fictional sample filing. It is a wiring smoke test, not
-an independent benchmark, and not a measure of answer correctness or general
+- Single filing: retrieval hit@3 by expected section - **5/6** on the
+  current sample filing (the supply-chain question falls outside the top 3
+  since the filing grew; rerunning the eval reproduces the number).
+- Three filings: cross-company ranking - **hit@1 6/6, hit@3 6/6** on
+  questions naming a specific company. This suite guards the entity-aware
+  re-ranking in `rag/retriever.py` that keeps a question about one company
+  from surfacing another company's shared financial boilerplate first.
+
+Scope of these numbers: the golden sets are authored for this project
+against fictional sample filings. They are wiring smoke tests, not an
+independent benchmark, and not a measure of answer correctness or general
 accuracy. Chunk text is embedded together with its section heading, which
 closes vocabulary gaps like "supply chain" vs "semiconductor suppliers".
 
@@ -82,6 +104,7 @@ both Docker images on every push and PR.
 
 - `docker-compose.yml` runs api + ui locally.
 - `docker/api.Dockerfile`, `docker/ui.Dockerfile` build the two services.
+- Live demo on Streamlit Community Cloud (free tier): https://investor-intelligence-platform.streamlit.app
 - `.github/workflows/cd-aks.yml` (manual trigger only) builds, pushes to
   Azure Container Registry and applies `k8s/` to AKS. It needs repo
   secrets/vars (`AZURE_CREDENTIALS`, `ACR_NAME`, `AKS_CLUSTER`,
@@ -91,8 +114,9 @@ both Docker images on every push and PR.
 
 ## Honest status
 
-- Verified locally (no paid services): 15/15 tests pass; retrieval smoke
-  eval 6/6 on the small project-authored golden set; ingest -> ask -> KPI
+- Verified locally (no paid services): 17/17 tests pass; retrieval smoke
+  evals reproduce at 5/6 (single filing, hit@3) and 6/6 hit@1
+  (cross-company ranking) - see Evaluation; ingest -> ask -> KPI
   flow works end to end on the sample filing without API keys; PDF ingestion
   verified with `pymupdf4llm` on a generated test PDF.
 - Retrieval today is lexical (TF-IDF keyword matching). Semantic embeddings
