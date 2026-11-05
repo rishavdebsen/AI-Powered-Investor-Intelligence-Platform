@@ -1,0 +1,8 @@
+[
+  {"question": "What was Meridian Industries total revenue in fiscal 2025?", "expected_doc_id": "meridian-industries-fy2025"},
+  {"question": "What was Vertex Mobility total revenue in fiscal 2025?", "expected_doc_id": "vertex-mobility-fy2025"},
+  {"question": "What was Aurora Retail Group total revenue in fiscal 2025?", "expected_doc_id": "aurora-retail-group-fy2025"},
+  {"question": "What drove Vertex Mobility revenue growth in fiscal 2025?", "expected_doc_id": "vertex-mobility-fy2025"},
+  {"question": "What are the main risk factors for Aurora Retail Group?", "expected_doc_id": "aurora-retail-group-fy2025"},
+  {"question": "What does Meridian Industries expect for fiscal 2026?", "expected_doc_id": "meridian-industries-fy2025"}
+]
