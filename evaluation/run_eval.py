@@ -36,7 +36,7 @@ def suite_single_filing() -> list[str]:
     lines = [
         "## Suite 1: single filing, section retrieval",
         "",
-        "Corpus: data/sample/meridian-industries-fy2025.md | metric: hit@%d by expected section" % K,
+        f"Corpus: data/sample/meridian-industries-fy2025.md | metric: hit@{K} by expected section",
         "",
         "Golden set: 6 self-authored questions over one fictional sample filing.",
         "",
@@ -62,14 +62,14 @@ def suite_cross_company() -> list[str]:
         hk = want in sources
         top1 += int(h1)
         hits += int(hk)
-        rows.append((item["question"], want, "HIT" if h1 else ("top-%d only" % K if hk else "MISS")))
+        rows.append((item["question"], want, "HIT" if h1 else (f"top-{K} only" if hk else "MISS")))
     n = len(golden) or 1
     lines = [
         "## Suite 2: three filings, cross-company ranking",
         "",
-        "Corpus: all three filings in data/sample/ | metrics: hit@1 and hit@%d by expected company" % K,
+        f"Corpus: all three filings in data/sample/ | metrics: hit@1 and hit@{K} by expected company",
         "",
-        "Golden set: %d self-authored questions naming a specific company." % len(golden),
+        f"Golden set: {len(golden)} self-authored questions naming a specific company.",
         "Measures whether a question naming one company ranks that company's",
         "filing first even when all filings share financial boilerplate.",
         "",
