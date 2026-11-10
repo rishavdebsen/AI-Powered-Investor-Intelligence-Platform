@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 import streamlit as st
 
+from investor_intel.analytics import Analytics
 from investor_intel.config import get_settings
 from investor_intel.db.models import ChunkRow
 from investor_intel.service import InvestorIntelService
@@ -55,6 +56,22 @@ def new_service(session_id: str) -> InvestorIntelService:
 
 
 @st.cache_resource
+def get_analytics() -> Analytics:
+    """One Mixpanel tracker per app process. Token comes from Streamlit
+    secrets (Community Cloud) or MIXPANEL_PROJECT_TOKEN; without one the
+    tracker is a no-op and the demo is unaffected."""
+    try:
+        token = st.secrets.get("MIXPANEL_PROJECT_TOKEN", "")
+    except Exception:
+        token = ""
+    settings = get_settings()
+    return Analytics(token or settings.mixpanel_project_token, api_host=settings.mixpanel_api_host)
+
+
+analytics = get_analytics()
+
+
+@st.cache_resource
 def cleanup_orphan_uploads() -> None:
     """Runs once per app process, before the first session store is created.
     Leftover upload/session files from dead sessions are removed here, never
@@ -71,6 +88,9 @@ if "session_id" not in st.session_state:
 if "service" not in st.session_state:
     cleanup_orphan_uploads()
     st.session_state.service = new_service(st.session_state.session_id)
+if "analytics_started" not in st.session_state:
+    st.session_state.analytics_started = True
+    analytics.track(st.session_state.session_id, "Session Started")
 
 
 def company_label(doc_name: str) -> tuple[str, str]:
@@ -155,6 +175,16 @@ with st.sidebar:
         dest = uploads_dir / f"{st.session_state.session_id}-{Path(upload.name).name}"
         dest.write_bytes(upload.getbuffer())
         result = service.ingest(dest)
+        analytics.track(
+            st.session_state.session_id,
+            "Report Uploaded",
+            {
+                "file_type": Path(upload.name).suffix.lower(),
+                "chunks": result.get("chunks", 0),
+                "kpis": result.get("kpis", 0),
+                "duplicate": bool(result.get("duplicate")),
+            },
+        )
         if result.get("duplicate"):
             st.info(f"{upload.name} is already ingested.")
         else:
@@ -254,6 +284,21 @@ with chat_col:
     question = st.chat_input("Ask a question about the filings")
     if question:
         st.session_state.chat.append({"role": "user", "content": question})
+        analytics.track(
+            st.session_state.session_id,
+            "Question Asked",
+            {"question_length": len(question), "documents_count": len(service.list_documents())},
+        )
         answer = service.ask(question)
+        analytics.track(
+            st.session_state.session_id,
+            "Answer Shown",
+            {
+                "citations_count": len(answer.citations),
+                "answer_length": len(answer.text),
+                "mode": answer.mode,
+                "retrieved": answer.retrieved,
+            },
+        )
         st.session_state.chat.append({"role": "assistant", "content": answer.text, "citations": answer.citations})
         st.rerun()
