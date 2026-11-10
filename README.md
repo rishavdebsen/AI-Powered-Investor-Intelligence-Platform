@@ -14,11 +14,12 @@ Ask questions of company filings and get answers with source citations, extract 
 - Extracts headline KPIs (revenue, net income, operating income, cash flow, total assets, total liabilities) into a queryable store
 - Answers natural-language questions with extractive snippets and citations (source file, section, retrieval score)
 - Dashboard compares KPIs across companies and surfaces growth drivers and risk factors
+- Tracks product usage (sessions, uploads, questions, answers) with Mixpanel funnels
 - FastAPI backend (`/ask`, `/ingest`, `/kpis`) plus a Streamlit UI, with Docker images for both services
 
 ## Tech stack
 
-Python - FastAPI - Streamlit - dependency-free TF-IDF retrieval - SQLite / PostgreSQL - Docker - GitHub Actions CI (lint, 17 tests, retrieval evaluation, Docker builds on every push)
+Python - FastAPI - Streamlit - dependency-free TF-IDF retrieval - SQLite / PostgreSQL - Mixpanel (product analytics) - Docker - GitHub Actions CI (lint, tests, retrieval evaluation, Docker builds on every push)
 
 Implemented and verified locally: structure-aware ingestion (PDF / Markdown / text), KPI extraction, TF-IDF retrieval with extractive cited answers, the FastAPI backend and the Streamlit dashboard.
 
@@ -72,6 +73,21 @@ Server-side ingestion is restricted to the configured data directory
 `pymupdf4llm` (included in `requirements.txt`). Set `LLM_PROVIDER=openai` (or `azure-openai`) and
 `II_EMBEDDINGS_PROVIDER=openai` with the variables in `.env.example` to
 switch on the (unverified) semantic/LLM mode.
+
+## Product analytics (Mixpanel)
+
+Usage of the app is tracked with Mixpanel so real behaviour can be reviewed in its funnels and reports:
+
+| Event | When | Properties |
+| --- | --- | --- |
+| `Session Started` | A new browser session opens the Streamlit app | - |
+| `Report Uploaded` | A filing is uploaded (Streamlit or API) | `file_type`, `chunks`, `kpis`, `duplicate`, `source` (API) |
+| `Question Asked` | A question is submitted | `question_length`, `documents_count`, `source` (API) |
+| `Answer Shown` | An answer is returned | `citations_count`, `answer_length`, `mode`, `retrieved` |
+
+These events support a funnel like `Session Started -> Report Uploaded -> Question Asked -> Answer Shown`, showing where users drop off before getting an answer. No question text, file contents or personal data is sent - only counts and technical metadata.
+
+Setup: set `MIXPANEL_PROJECT_TOKEN` (in `.env`, or in Streamlit Community Cloud under app Settings -> Secrets). Use `MIXPANEL_API_HOST=api-eu.mixpanel.com` for EU data-residency projects. Without a token the tracker is a no-op, so local development, CI and the demo run with no Mixpanel account. Events are sent on a background thread; analytics can never break the app.
 
 ## Evaluation
 
