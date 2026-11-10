@@ -162,6 +162,7 @@ section[data-testid="stSidebar"] { background-color: #0a0e14; }
 with st.sidebar:
     st.markdown("## Investor Intelligence")
     st.caption("Free demo build - local TF-IDF retrieval, extractive answers (no generative AI).")
+    st.caption("This demo uses Mixpanel for usage analytics: sessions, uploads, questions asked and answers shown. Events contain counts and technical metadata, not uploaded document contents or question text. Analytics data is stored in the US.")
     st.divider()
     st.markdown("**Ingest Report**")
     st.caption("Drop a filing (PDF / Markdown / text). Uploaded files are stored on the demo app's temporary disk and visible only within this browser session; leftovers from earlier sessions are removed when the app restarts.")
