@@ -33,6 +33,8 @@ class Settings:
     azure_search_endpoint: str
     azure_search_api_key: str
     azure_search_index: str
+    mixpanel_project_token: str
+    mixpanel_api_host: str
 
 
 def get_settings() -> Settings:
@@ -52,4 +54,6 @@ def get_settings() -> Settings:
         azure_search_endpoint=_env("AZURE_SEARCH_ENDPOINT"),
         azure_search_api_key=_env("AZURE_SEARCH_API_KEY"),
         azure_search_index=_env("AZURE_SEARCH_INDEX", "investor-docs"),
+        mixpanel_project_token=_env("MIXPANEL_PROJECT_TOKEN"),
+        mixpanel_api_host=_env("MIXPANEL_API_HOST", "api.mixpanel.com"),
     )
