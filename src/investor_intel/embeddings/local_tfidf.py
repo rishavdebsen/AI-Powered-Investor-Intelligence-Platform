@@ -19,6 +19,8 @@ def tokenize(text: str) -> list[str]:
 
 
 class TfidfEmbedder:
+    vector_kind = "sparse"
+
     def __init__(self) -> None:
         self.df: Counter[str] = Counter()
         self.n_docs = 0
