@@ -128,6 +128,16 @@ def section_text(service: InvestorIntelService, doc_id: str, heading: str) -> st
 
 service = st.session_state.service
 
+_RETRIEVAL_LABELS = {
+    "local": "local TF-IDF retrieval",
+    "hybrid": "hybrid TF-IDF + local semantic-embedding retrieval",
+    "sentence-transformers": "local semantic-embedding retrieval",
+    "sentence_transformers": "local semantic-embedding retrieval",
+    "openai": "OpenAI embeddings",
+}
+# Honesty labels must match the configured retrieval backend.
+RETRIEVAL_LABEL = _RETRIEVAL_LABELS.get(service.settings.embeddings_provider, "local TF-IDF retrieval")
+
 st.set_page_config(page_title="Investor Intelligence Platform", layout="wide")
 
 st.markdown(
@@ -161,7 +171,7 @@ section[data-testid="stSidebar"] { background-color: #0a0e14; }
 # ---- Sidebar: ingest + documents -----------------------------------------
 with st.sidebar:
     st.markdown("## Investor Intelligence")
-    st.caption("Free demo build - local TF-IDF retrieval, extractive answers (no generative AI).")
+    st.caption(f"Free demo build - {RETRIEVAL_LABEL}, extractive answers (no generative AI).")
     st.caption("This demo uses Mixpanel for usage analytics: sessions, uploads, questions asked and answers shown. Events contain counts and technical metadata, not uploaded document contents or question text. Analytics data is stored in the US.")
     st.divider()
     st.markdown("**Ingest Report**")
@@ -212,7 +222,7 @@ st.markdown("<p style='text-align:center; color:#7d8590; margin-top:4px;'>Corpor
 st.markdown(
     "<div style='text-align:center; margin-bottom:14px;'><span class='badge-demo'>"
     "Demo data: three fictional sample companies (synthetic filings) - answers are extractive "
-    "snippets from ingested filings via local TF-IDF retrieval, not generative AI."
+    f"snippets from ingested filings via {RETRIEVAL_LABEL}, not generative AI."
     "</span></div>",
     unsafe_allow_html=True,
 )
@@ -272,7 +282,7 @@ with main_col:
 
 with chat_col:
     st.markdown("### AI Analyst")
-    st.caption("Ask about the ingested filings. Answers are extractive snippets (local TF-IDF retrieval) with citations - not generative AI.")
+    st.caption(f"Ask about the ingested filings. Answers are extractive snippets ({RETRIEVAL_LABEL}) with citations - not generative AI.")
     if "chat" not in st.session_state:
         st.session_state.chat = []
     for msg in st.session_state.chat:
