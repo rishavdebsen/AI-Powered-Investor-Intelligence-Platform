@@ -21,7 +21,9 @@ class Settings:
     profile: str
     database_url: str
     data_dir: str
-    embeddings_provider: str    # local | openai
+    embeddings_provider: str    # local | openai | sentence-transformers | hybrid
+    sentence_transformer_model: str
+    hybrid_tfidf_weight: float  # TF-IDF share of the hybrid fusion score (0-1)
     openai_embedding_model: str
     llm_provider: str           # none | openai | azure-openai
     openai_api_key: str
@@ -43,6 +45,8 @@ def get_settings() -> Settings:
         database_url=_env("DATABASE_URL", "sqlite:///./investor_intel.db"),
         data_dir=_env("II_DATA_DIR", "data"),
         embeddings_provider=_env("II_EMBEDDINGS_PROVIDER", "local"),
+        sentence_transformer_model=_env("II_SENTENCE_TRANSFORMER_MODEL", "sentence-transformers/all-MiniLM-L6-v2"),
+        hybrid_tfidf_weight=float(_env("II_HYBRID_TFIDF_WEIGHT", "0.5")),
         openai_embedding_model=_env("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
         llm_provider=_env("LLM_PROVIDER", "none"),
         openai_api_key=_env("OPENAI_API_KEY"),
