@@ -8,6 +8,11 @@ version = "1.0.0"
 description = "RAG platform for asking questions of company filings, with KPI extraction, evaluation, and AKS deployment"
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+# Semantic retrieval: local sentence-transformers embeddings on CPU.
+# Enable with II_EMBEDDINGS_PROVIDER=sentence-transformers
+semantic = ["sentence-transformers>=2.7"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
