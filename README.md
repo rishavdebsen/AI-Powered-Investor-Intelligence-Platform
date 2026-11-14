@@ -19,11 +19,51 @@ Ask questions of company filings and get answers with source citations, extract 
 
 ## Tech stack
 
-Python - FastAPI - Streamlit - dependency-free TF-IDF retrieval - SQLite / PostgreSQL - Mixpanel (product analytics) - Docker - GitHub Actions CI (lint, tests, retrieval evaluation, Docker builds on every push)
+Python - FastAPI - Streamlit - TF-IDF retrieval (default) with optional local sentence-transformers semantic/hybrid retrieval - SQLite / PostgreSQL - Mixpanel (product analytics) - Docker - GitHub Actions CI (lint, tests, retrieval evaluation, Docker builds on every push)
 
 Implemented and verified locally: structure-aware ingestion (PDF / Markdown / text), KPI extraction, TF-IDF retrieval with extractive cited answers, the FastAPI backend and the Streamlit dashboard.
 
 Wired but not yet verified: OpenAI / Azure OpenAI embeddings and LLM-written answers, behind configuration - no API key has been run against them.
+
+## Semantic and hybrid retrieval (optional)
+
+The default local profile stays dependency-free TF-IDF. Two additional local
+backends use [sentence-transformers](https://sbert.net/) embeddings that run
+on CPU with no API keys (one-time model download from the Hugging Face hub):
+
+- `II_EMBEDDINGS_PROVIDER=sentence-transformers` - dense semantic embeddings
+- `II_EMBEDDINGS_PROVIDER=hybrid` - fuses TF-IDF and dense rankings
+  (per-query normalized scores, `II_HYBRID_TFIDF_WEIGHT`, default 0.5)
+
+Install the extra and enable the backend:
+
+```bash
+pip install 'investor-intel[semantic]'
+export II_EMBEDDINGS_PROVIDER=hybrid
+```
+
+Measured on the sample filings (`python evaluation/compare_backends.py`, 10
+test questions - paraphrase-heavy plus direct lookups, 18 chunks):
+
+| backend | recall@1 | recall@3 | recall@5 | MRR |
+| --- | --- | --- | --- | --- |
+| TF-IDF (default) | 0.80 | 0.80 | 0.80 | 0.80 |
+| semantic (all-MiniLM-L6-v2) | 0.70 | 0.80 | 0.80 | 0.75 |
+| hybrid (0.5 TF-IDF + 0.5 semantic) | 0.80 | 0.80 | 0.90 | 0.82 |
+
+Retrieval uses k=5, the app's default, so these numbers reflect what the app
+actually returns.
+
+Honest read: on this small corpus, dense embeddings alone are slightly
+worse than the tuned keyword search. The hybrid keeps top-citation accuracy
+(recall@1) and recall@3 level, and its measured edge is recall@5 - the
+right section appears somewhere in the five citations for 9 of 10 questions
+versus 8 of 10 - because it surfaces sections like Segment Results for
+"Which parts of the business bring in the most sales?" that keyword search
+does not return at all. The evaluation set is small and the filings are
+fictional samples; treat these numbers as directional, and extend
+`evaluation/compare_backends.py` with real filings and questions before
+drawing bigger conclusions.
 
 ## Architecture
 
